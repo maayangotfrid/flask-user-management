@@ -16,23 +16,31 @@ def get_db_connection():
     )
     return connection
 
-# פונקציה להורדת סרטון TikTok
-def download_tiktok_video(video_url, save_path='tiktok_videos'):
+
+
+
+def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
+    # ודא שהתיקייה קיימת, אם לא צור אותה
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
+    # הגדרות ל-yt-dlp
     ydl_opts = {
         'outtmpl': os.path.join(save_path, '%(id)s.%(ext)s'),
         'format': 'best',
     }
 
     try:
+        # הורדת הסרטון
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=True)
             filename = ydl.prepare_filename(info)
             return f"Video successfully downloaded: {filename}"
     except Exception as e:
         return f"Error downloading video: {str(e)}"
+
+
+
 
 # דף הבית שמציג את כל המשתמשים
 @app.route('/', methods=["GET", "POST"])
