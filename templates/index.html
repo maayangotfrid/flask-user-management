@@ -33,5 +33,16 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <h2>Download TikTok Video</h2>
+    <form method="POST" action="/download_video">
+        <label for="video_url">Enter TikTok video URL:</label>
+        <input type="text" id="video_url" name="video_url" required>
+        <button type="submit">Download Video</button>
+    </form>
+
+    {% if message %}
+    <p>{{ message }}</p>
+    {% endif %}
 </body>
 </html>
