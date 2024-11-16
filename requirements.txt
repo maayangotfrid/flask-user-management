@@ -57,8 +57,6 @@ playwright==1.47.0
 proglog==0.1.10
 psycopg2==2.9.10
 pycparser==2.21
-pydantic==2.9.2
-pyee==8.2.2
 Pygments==2.18.0
 pyOpenSSL==24.2.1
 pyparsing==3.1.4
