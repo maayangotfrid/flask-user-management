@@ -41,6 +41,15 @@ def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
 
 
 
+# דף להורדת סרטון
+@app.route('/download_video/<filename>')
+def download_video(filename):
+    return send_from_directory('Tiktok_download_files', filename)
+
+
+
+
+
 
 # דף הבית שמציג את כל המשתמשים
 @app.route('/', methods=["GET", "POST"])
