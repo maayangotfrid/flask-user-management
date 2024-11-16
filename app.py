@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 import psycopg2
+import yt_dlp
+import os
 
 app = Flask(__name__)
 
@@ -14,8 +16,26 @@ def get_db_connection():
     )
     return connection
 
+# פונקציה להורדת סרטון TikTok
+def download_tiktok_video(video_url, save_path='tiktok_videos'):
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+
+    ydl_opts = {
+        'outtmpl': os.path.join(save_path, '%(id)s.%(ext)s'),
+        'format': 'best',
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(video_url, download=True)
+            filename = ydl.prepare_filename(info)
+            return f"Video successfully downloaded: {filename}"
+    except Exception as e:
+        return f"Error downloading video: {str(e)}"
+
 # דף הבית שמציג את כל המשתמשים
-@app.route('/')
+@app.route('/', methods=["GET", "POST"])
 def home():
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -27,7 +47,12 @@ def home():
     cursor.close()
     connection.close()
 
-    return render_template('index.html', users=users)
+    message = ""
+    if request.method == "POST":
+        video_url = request.form["video_url"]
+        message = download_tiktok_video(video_url)
+
+    return render_template('index.html', users=users, message=message)
 
 # דף להוספת משתמש חדש
 @app.route('/add_user', methods=['GET', 'POST'])
