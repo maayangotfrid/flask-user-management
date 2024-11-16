@@ -41,6 +41,11 @@
         <button type="submit">Download Video</button>
     </form>
 
+
+
+    <a href="{{ url_for('download_video', filename='12345.mp4') }}" download>Download Video</a>
+
+    
     {% if message %}
     <p>{{ message }}</p>
     {% endif %}
