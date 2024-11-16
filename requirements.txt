@@ -101,8 +101,6 @@ soupsieve==2.5
 SQLAlchemy==2.0.36
 sympy==1.13.3
 tiktok-scraper==1.0.3
-# Editable install with no version control (tiktok-uploader==1.0.16)
--e c:\users\user\desktop\tiktok_uploader-1.0.16\tiktok_uploader-1.0.16
 tiktok_downloader==0.3.5
 TikTokApi==6.5.2
 tiktokapipy==0.2.4.post2
