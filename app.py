@@ -35,8 +35,10 @@ def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=True)
             filename = ydl.prepare_filename(info)
+            print(f"Downloaded file: {filename}")  # לוג שמציג את שם הקובץ
             return filename  # מחזיר את שם הקובץ שנשמר
     except Exception as e:
+        print(f"Error downloading video: {str(e)}")
         return f"Error downloading video: {str(e)}"
 
 # דף להורדת סרטון
@@ -44,8 +46,10 @@ def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
 def download_video(filename):
     try:
         # אם הסרטון נמצא, תשלח אותו להורדה
+        print(f"Attempting to download file: {filename}")
         return send_from_directory('Tiktok_download_files', filename, as_attachment=True)
     except FileNotFoundError:
+        print(f"File not found: {filename}")
         return "File not found, please try again."
 
 # דף הבית שמציג את כל המשתמשים
