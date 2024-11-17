@@ -30,6 +30,7 @@ def tiktok():
     return render_template('tiktok.html')
 
 
+
 @app.route('/users', methods=["GET", "POST"])
 def users():
     connection = get_db_connection()
@@ -48,14 +49,21 @@ def users():
 
 
 
-# דף להורדה
-@app.route('/download_video/<filename>')
+# דף הורדת סרטון
+@app.route('/download_video/<filename>', methods=["GET"])
 def download_video(filename):
-    file_path = os.path.join(os.getcwd(), 'Tiktok_download_files', filename)
-    if os.path.exists(file_path):
-        return send_from_directory(directory=os.path.dirname(file_path), filename=filename, as_attachment=True)
-    else:
-        return "File not found, please try again."
+    # ניצור את הנתיב המלא של הקובץ
+    try:
+        file_path = os.path.join(os.getcwd(), 'Tiktok_download_files', filename)
+        
+        # אם הקובץ קיים, נשלח אותו להורדה
+        if os.path.exists(file_path):
+            return send_from_directory(directory=os.path.dirname(file_path), filename=filename, as_attachment=True)
+        else:
+            return "File not found, please try again."
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
 
 # דף פייסבוק
 @app.route('/facebook')
