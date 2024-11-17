@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 import psycopg2
 import yt_dlp
 import os
@@ -16,9 +16,7 @@ def get_db_connection():
     )
     return connection
 
-
-
-
+# פונקציה להורדת סרטון TikTok
 def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
     # ודא שהתיקייה קיימת, אם לא צור אותה
     if not os.path.exists(save_path):
@@ -28,6 +26,8 @@ def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
     ydl_opts = {
         'outtmpl': os.path.join(save_path, '%(id)s.%(ext)s'),
         'format': 'best',
+        'noplaylist': True,  # מוודא שלא יבחרו פלייליסטים
+        'quiet': False,  # מאפשר לראות את כל הלוגים
     }
 
     try:
@@ -39,17 +39,14 @@ def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
     except Exception as e:
         return f"Error downloading video: {str(e)}"
 
-
-
 # דף להורדת סרטון
 @app.route('/download_video/<filename>')
 def download_video(filename):
-    return send_from_directory('Tiktok_download_files', filename)
-
-
-
-
-
+    try:
+        # אם הסרטון נמצא, תשלח אותו להורדה
+        return send_from_directory('Tiktok_download_files', filename)
+    except FileNotFoundError:
+        return "File not found, please try again."
 
 # דף הבית שמציג את כל המשתמשים
 @app.route('/', methods=["GET", "POST"])
