@@ -1,14 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>TikTok</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download TikTok Video</title>
 </head>
 <body>
-    <h1>TikTok Video Download</h1>
-    <form method="POST" action="/download_video">
-        <label for="video_url">Enter TikTok video URL:</label>
-        <input type="text" id="video_url" name="video_url" required>
-        <button type="submit">Download Video</button>
-    </form>
+
+<h1>Download TikTok Video</h1>
+
+<form method="POST" action="/tiktok">
+    <label for="video_url">Enter TikTok Video URL:</label><br>
+    <input type="text" id="video_url" name="video_url" required><br><br>
+    <input type="submit" value="Download">
+</form>
+
+{% if message %}
+    <p>{{ message }}</p>
+{% endif %}
+
+{% if filename %}
+    <h2>Download your video:</h2>
+    <a href="{{ url_for('download_video', filename=filename) }}" download>
+        <button>Click here to download</button>
+    </a>
+{% endif %}
+
 </body>
 </html>
