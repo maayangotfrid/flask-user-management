@@ -1,60 +1,20 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-import psycopg2
-import yt_dlp
-import os
+from flask import Flask, render_template, request, redirect, url_for
+from functions.db_connection import get_db_connection
+from functions.download_tiktok import download_tiktok_video
+from functions.add_user import add_user_to_db
+from functions.update_user import update_user_in_db
+from functions.delete_user import delete_user_from_db
 
 app = Flask(__name__)
 
-# פונקציה להתחברות למסד הנתונים
-def get_db_connection():
-    connection = psycopg2.connect(
-        host='dpg-css42c1u0jms73e5mel0-a.frankfurt-postgres.render.com',
-        port=5432,
-        database='mgproject',
-        user='maayan',
-        password='BowLYRTI3H9xpayZixjVTFWM0malIzzj'
-    )
-    return connection
-
-# פונקציה להורדת סרטון TikTok
-def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
-    # ודא שהתיקייה קיימת, אם לא צור אותה
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-
-    # הגדרות ל-yt-dlp
-    ydl_opts = {
-        'outtmpl': os.path.join(save_path, '%(id)s.%(ext)s'),
-        'format': 'best',
-        'noplaylist': True,  # מוודא שלא יבחרו פלייליסטים
-        'quiet': False,  # מאפשר לראות את כל הלוגים
-    }
-
-    try:
-        # הורדת הסרטון
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=True)
-            filename = ydl.prepare_filename(info)
-            print(f"Downloaded file: {filename}")  # לוג שמציג את שם הקובץ
-            return filename  # מחזיר את שם הקובץ שנשמר
-    except Exception as e:
-        print(f"Error downloading video: {str(e)}")
-        return f"Error downloading video: {str(e)}"
-
-# דף להורדת סרטון
-@app.route('/download_video/<filename>')
-def download_video(filename):
-    try:
-        # אם הסרטון נמצא, תשלח אותו להורדה
-        print(f"Attempting to download file: {filename}")
-        return send_from_directory('Tiktok_download_files', filename, as_attachment=True)
-    except FileNotFoundError:
-        print(f"File not found: {filename}")
-        return "File not found, please try again."
-
-# דף הבית שמציג את כל המשתמשים
-@app.route('/', methods=["GET", "POST"])
+# דף ראשי - Dashboard
+@app.route('/')
 def home():
+    return render_template('index.html')
+
+# דף למשתמשים
+@app.route('/users', methods=["GET", "POST"])
+def users():
     connection = get_db_connection()
     cursor = connection.cursor()
 
@@ -65,17 +25,36 @@ def home():
     cursor.close()
     connection.close()
 
-    message = ""
-    filename = None
+    return render_template('users.html', users=users)
+
+# דף טיקטוק
+@app.route('/tiktok', methods=["GET", "POST"])
+def tiktok():
     if request.method == "POST":
         video_url = request.form["video_url"]
-        message = "Downloading video..."
-        filename = download_tiktok_video(video_url)
-        if "Error" in filename:
-            message = f"Error: {filename}"
-            filename = None
+        message = download_tiktok_video(video_url)
+        return render_template('tiktok.html', message=message)
+    return render_template('tiktok.html')
 
-    return render_template('index.html', users=users, message=message, filename=filename)
+# דף פייסבוק
+@app.route('/facebook')
+def facebook():
+    return render_template('facebook.html')
+
+# דף אינסטגרם
+@app.route('/instagram')
+def instagram():
+    return render_template('instagram.html')
+
+# דף טלגרם
+@app.route('/telegram')
+def telegram():
+    return render_template('telegram.html')
+
+# דף יוטיוב
+@app.route('/youtube')
+def youtube():
+    return render_template('youtube.html')
 
 # דף להוספת משתמש חדש
 @app.route('/add_user', methods=['GET', 'POST'])
@@ -90,20 +69,7 @@ def add_user():
         active = request.form['active']
         image_url = request.form['image_url']
 
-        connection = get_db_connection()
-        cursor = connection.cursor()
-
-        cursor.execute(
-            '''INSERT INTO users (name, email, phone, role, password, valid, active, image_url)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''',
-            (name, email, phone, role, password, valid, active, image_url)
-        )
-        connection.commit()
-
-        cursor.close()
-        connection.close()
-
-        return redirect(url_for('home'))
+        return add_user_to_db(name, email, phone, role, password, valid, active, image_url)
 
     return render_template('add_user.html')
 
@@ -127,17 +93,7 @@ def update_user(user_id):
         active = request.form.get('active', user[7])
         image_url = request.form.get('image_url', user[8])
 
-        cursor.execute(
-            '''UPDATE users SET name = %s, email = %s, phone = %s, role = %s, password = %s, 
-            valid = %s, active = %s, image_url = %s WHERE id = %s''',
-            (name, email, phone, role, password, valid, active, image_url, user_id)
-        )
-        connection.commit()
-
-        cursor.close()
-        connection.close()
-
-        return redirect(url_for('home'))
+        return update_user_in_db(user_id, name, email, phone, role, password, valid, active, image_url)
 
     cursor.close()
     connection.close()
@@ -147,17 +103,7 @@ def update_user(user_id):
 # דף למחיקת משתמש
 @app.route('/delete_user/<int:user_id>', methods=['GET'])
 def delete_user(user_id):
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    # מחיקת המשתמש
-    cursor.execute('DELETE FROM users WHERE id = %s', (user_id,))
-    connection.commit()
-
-    cursor.close()
-    connection.close()
-
-    return redirect(url_for('home'))
+    return delete_user_from_db(user_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
