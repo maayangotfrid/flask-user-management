@@ -34,19 +34,20 @@
         </tbody>
     </table>
 
-    <h2>Download TikTok Video2</h2>
-    <form method="POST" action="/">
+    <h2>Download TikTok Video3</h2>
+  <form method="POST" action="/download_video">
         <label for="video_url">Enter TikTok video URL:</label>
         <input type="text" id="video_url" name="video_url" required>
         <button type="submit">Download Video</button>
     </form>
 
     {% if message %}
-        <p>{{ message }}</p>
+    <p>{{ message }}</p>
     {% endif %}
 
     {% if filename %}
-        <a href="{{ url_for('download_video', filename=filename) }}" download>Download Video</a>
+    <a href="{{ url_for('download_video', filename=filename) }}" download>Click here to download the video</a>
     {% endif %}
+
 </body>
 </html>
