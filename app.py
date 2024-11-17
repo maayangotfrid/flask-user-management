@@ -4,6 +4,8 @@ from functions.download_tiktok import download_tiktok_video
 from functions.add_user import add_user_to_db
 from functions.update_user import update_user_in_db
 from functions.delete_user import delete_user_from_db
+from flask import send_from_directory
+import os
 
 app = Flask(__name__)
 
@@ -12,29 +14,29 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
-# דף למשתמשים
-@app.route('/users', methods=["GET", "POST"])
-def users():
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    # שליפת כל המשתמשים
-    cursor.execute('SELECT * FROM users')
-    users = cursor.fetchall()  # כל המשתמשים
-
-    cursor.close()
-    connection.close()
-
-    return render_template('users.html', users=users)
-
 # דף טיקטוק
 @app.route('/tiktok', methods=["GET", "POST"])
 def tiktok():
     if request.method == "POST":
         video_url = request.form["video_url"]
-        message = download_tiktok_video(video_url)
-        return render_template('tiktok.html', message=message)
+        # הורדת הסרטון
+        filename = download_tiktok_video(video_url)
+        if filename.startswith("Error"):
+            message = filename
+            return render_template('tiktok.html', message=message)
+        else:
+            # אם הסרטון הורד בהצלחה, העבר את שם הקובץ לדף ההורדה
+            return redirect(url_for('download_video', filename=filename))
     return render_template('tiktok.html')
+
+# דף להורדה
+@app.route('/download_video/<filename>')
+def download_video(filename):
+    file_path = os.path.join(os.getcwd(), 'Tiktok_download_files', filename)
+    if os.path.exists(file_path):
+        return send_from_directory(directory=os.path.dirname(file_path), filename=filename, as_attachment=True)
+    else:
+        return "File not found, please try again."
 
 # דף פייסבוק
 @app.route('/facebook')
