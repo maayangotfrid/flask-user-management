@@ -35,7 +35,7 @@ def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=True)
             filename = ydl.prepare_filename(info)
-            return f"Video successfully downloaded: {filename}"
+            return filename  # מחזיר את שם הקובץ שנשמר
     except Exception as e:
         return f"Error downloading video: {str(e)}"
 
@@ -44,7 +44,7 @@ def download_tiktok_video(video_url, save_path='Tiktok_download_files'):
 def download_video(filename):
     try:
         # אם הסרטון נמצא, תשלח אותו להורדה
-        return send_from_directory('Tiktok_download_files', filename)
+        return send_from_directory('Tiktok_download_files', filename, as_attachment=True)
     except FileNotFoundError:
         return "File not found, please try again."
 
@@ -62,11 +62,16 @@ def home():
     connection.close()
 
     message = ""
+    filename = None
     if request.method == "POST":
         video_url = request.form["video_url"]
-        message = download_tiktok_video(video_url)
+        message = "Downloading video..."
+        filename = download_tiktok_video(video_url)
+        if "Error" in filename:
+            message = f"Error: {filename}"
+            filename = None
 
-    return render_template('index.html', users=users, message=message)
+    return render_template('index.html', users=users, message=message, filename=filename)
 
 # דף להוספת משתמש חדש
 @app.route('/add_user', methods=['GET', 'POST'])
