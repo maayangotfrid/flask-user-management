@@ -29,6 +29,25 @@ def tiktok():
             return redirect(url_for('download_video', filename=filename))
     return render_template('tiktok.html')
 
+
+@app.route('/users', methods=["GET", "POST"])
+def users():
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # שליפת כל המשתמשים
+    cursor.execute('SELECT * FROM users')
+    users = cursor.fetchall()  # כל המשתמשים
+
+    cursor.close()
+    connection.close()
+
+    return render_template('users.html', users=users)
+
+
+
+
+
 # דף להורדה
 @app.route('/download_video/<filename>')
 def download_video(filename):
